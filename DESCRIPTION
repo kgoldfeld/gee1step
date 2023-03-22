@@ -20,7 +20,8 @@ Depends:
 Imports:
     data.table
 Suggests: 
-    simstudy
+    simstudy,
+    knitr
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

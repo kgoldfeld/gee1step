@@ -3,17 +3,31 @@
 #' @param formula an object of class "formula": a symbolic description of the model to be fitted.
 #' @param data a required data frame or data.table containing the variables in the model.
 #' @param cluster the name of the field that identifies the clusters.
+#' @param ... currently disregarded
 #' @return a "gee1step" object
 #' @examples
 #' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
 #' geefit
 #'
 #' @export
-gee1step <- function(formula, data, cluster) {
+gee1step <- function(formula, data, cluster, ...) {
+
+  # "declare" vars to avoid global NOTE
+
+  p <- NULL
+  intz <- NULL
+  intz1 <- NULL
+  resid <- NULL
+  wt_ij <- NULL
+  rho_ij <- NULL
+  sum_r <- NULL
+  uss_r <- NULL
+  N <- NULL
+
 
   ### Check arguments
 
-  if ( class(formula) != "formula" ) {
+  if ( ! inherits(formula, "formula" ) ) {
     stop("The argument `formula` is not properly specified")
   }
 
@@ -48,7 +62,7 @@ gee1step <- function(formula, data, cluster) {
   ###
 
   dx <- copy(data)
-  glmfit <- stats::glm(formula, data = dx, family = binomial)
+  glmfit <- stats::glm(formula, data = dx, family = stats::binomial(link = "logit"))
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
   dx[, intz := sqrt( p * (1-p) )]
@@ -62,7 +76,7 @@ gee1step <- function(formula, data, cluster) {
   ### Estimate ICC
 
   drho <- dx[,
-             .(.N,
+             list(.N,
                sum_r = sum(resid),
                uss_r = sum(resid^2)
              ), keyby = get(cluster)]
@@ -75,7 +89,7 @@ gee1step <- function(formula, data, cluster) {
 
   getsum <- function(x, .dx) {
 
-    .dd <- .dx[, .(sum(get(x))), keyby = cluster]
+    .dd <- .dx[, list(sum(get(x))), keyby = cluster]
     setnames(.dd, "V1", x)
     .dd[]
   }
@@ -98,8 +112,8 @@ gee1step <- function(formula, data, cluster) {
   U <- do.call(cbind, du)
   addU <- apply(U, 2, sum)
 
-  beta <- coef(glmfit)
-  bvcov <- vcov(glmfit)
+  beta <- stats::coef(glmfit)
+  bvcov <- stats::vcov(glmfit)
 
   dvd <- matrix(solve(bvcov) - dvd_add, dim(bvcov)[1], dim(bvcov)[2])
 
@@ -164,24 +178,62 @@ gee1step <- function(formula, data, cluster) {
 
   beta2 <- as.vector(beta2)
   z <- beta2/se.vb
-  p.value <- pnorm(-abs(z))
+  p.value <- stats::pnorm(-abs(z))
 
   estimates <- data.frame(est = beta2, se.err = se.vb, z = z, p.value = p.value)
-  rownames(estimates) <-  c("Intercept", labels(terms(formula)))
+  rownames(estimates) <-  c("Intercept", labels(stats::terms(formula)))
 
   n_clusters <- nrow(drho)
   avg_cluster_size <- drho[, mean(N)]
   min_cluster_size <- drho[, min(N)]
   max_cluster_size <- drho[, max(N)]
 
+  rm(.X, ..X)
+
   result <- list(estimates = estimates, rho = rho,
                  clusters = list (n_clusters = n_clusters,
                                   avg_size = avg_cluster_size, min_size = min_cluster_size, max_size = max_cluster_size),
                  outcome = Y,
-                 model = formula)
+                 formula = formula,
+                 xnames = X)
 
   attr(result, "class") <- "gee1step"
 
   return(result)
+}
+
+
+#' Estimate parameters using one-step algorithm
+#' @param object a fitted model object of class "gee1step".
+#' @param data a required data frame or data.table containing the variables
+#' in the model.
+#' @param type the type of prediction required. The default ("link") is on the scale of
+#' the linear predictors; the alternative "response" is on the scale of the
+#' response variable. For this model (a binomial model) the default predictions
+#' are of log-odds (probabilities on logit scale) and type = "response" gives
+#' the predicted probabilities.
+#' @param ... currently disregarded
+#' @return a vector of predictions
+#' @examples
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' predict(geefit, sampData)
+#'
+#' @export
+predict.gee1step <- function(object, data, type = "link", ...) {
+
+  beta <- object$estimate$est
+  X <- object$xnames
+
+  logodds <- as.vector(cbind(1, as.matrix(data[, ..X])) %*% beta)
+
+  ### post-declaration to avoid CHECK note - seems to work
+  ..X <- NULL
+
+  if (type == "link") {
+    return(logodds)
+  } else if (type == "response") {
+    return(1/(exp(-logodds) + 1))
+  }
+
 }
 

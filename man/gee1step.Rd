@@ -4,7 +4,7 @@
 \alias{gee1step}
 \title{Estimate parameters using one-step algorithm}
 \usage{
-gee1step(formula, data, cluster)
+gee1step(formula, data, cluster, ...)
 }
 \arguments{
 \item{formula}{an object of class "formula": a symbolic description of the model to be fitted.}
@@ -12,6 +12,8 @@ gee1step(formula, data, cluster)
 \item{data}{a required data frame or data.table containing the variables in the model.}
 
 \item{cluster}{the name of the field that identifies the clusters.}
+
+\item{...}{currently disregarded}
 }
 \value{
 a "gee1step" object
