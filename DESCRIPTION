@@ -18,14 +18,8 @@ BugReports: https://github.com/kgoldfeld/gee1step/issues
 Depends:
     R (>= 3.3.0)
 Imports:
-    data.table,
-    glue,
-    methods,
-    mvnfast,
-    Rcpp,
-    backports
+    data.table
 Suggests: 
-    testthat,
     simstudy
 VignetteBuilder: 
     knitr
