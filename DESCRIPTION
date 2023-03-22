@@ -10,8 +10,8 @@ Authors@R:
              email = "keith.goldfeld@nyulangone.org",
              comment = c(ORCID = "0000-0002-0292-8780")))
 Description: This is an implementation of the Lipsitz et al. one-step GEE 
-algorithm developed to make GEE estimation using data sets with very large
-cluster sizes computationally feasible.
+    algorithm developed to make GEE estimation using data sets with very large
+    cluster sizes computationally feasible.
 License: GPL-3
 URL: https://github.com/kgoldfeld/gee1step,
 BugReports: https://github.com/kgoldfeld/gee1step/issues
@@ -31,3 +31,4 @@ VignetteBuilder:
     knitr
 Encoding: UTF-8
 RoxygenNote: 7.2.3
+LazyData: true
