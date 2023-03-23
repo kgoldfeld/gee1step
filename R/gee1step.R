@@ -4,6 +4,9 @@
 #' @param data a required data frame or data.table containing the variables in the model.
 #' @param cluster the name of the field that identifies the clusters.
 #' @param ... currently disregarded
+#' @references Lipsitz, S., Fitzmaurice, G., Sinha, D., Hevelone, N., Hu, J.,
+#' & Nguyen, L. L. (2017). One-step generalized estimating equations with large
+#' cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 #' @return a "gee1step" object
 #' @examples
 #' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
@@ -174,14 +177,7 @@ gee1step <- function(formula, data, cluster, ...) {
   uusq <- uusq * nrow(dsum2) / ( nrow(dsum2) - 1)
 
   vb <- solve(dvd) %*% uusq %*% solve(dvd)
-  se.vb <- sqrt(diag(vb))
-
   beta2 <- as.vector(beta2)
-  z <- beta2/se.vb
-  p.value <- stats::pnorm(-abs(z))
-
-  estimates <- data.frame(est = beta2, se.err = se.vb, z = z, p.value = p.value)
-  rownames(estimates) <-  c("Intercept", labels(stats::terms(formula)))
 
   n_clusters <- nrow(drho)
   avg_cluster_size <- drho[, mean(N)]
@@ -190,50 +186,19 @@ gee1step <- function(formula, data, cluster, ...) {
 
   rm(.X, ..X)
 
-  result <- list(estimates = estimates, rho = rho,
-                 clusters = list (n_clusters = n_clusters,
+  result <- list(beta = beta2,
+                 vb = vb,
+                 rho = rho,
+                 clustersum = list (n_clusters = n_clusters,
                                   avg_size = avg_cluster_size, min_size = min_cluster_size, max_size = max_cluster_size),
                  outcome = Y,
                  formula = formula,
-                 xnames = X)
+                 xnames = X,
+                 call = match.call()
+  )
 
   attr(result, "class") <- "gee1step"
 
   return(result)
-}
-
-
-#' Estimate parameters using one-step algorithm
-#' @param object a fitted model object of class "gee1step".
-#' @param data a required data frame or data.table containing the variables
-#' in the model.
-#' @param type the type of prediction required. The default ("link") is on the scale of
-#' the linear predictors; the alternative "response" is on the scale of the
-#' response variable. For this model (a binomial model) the default predictions
-#' are of log-odds (probabilities on logit scale) and type = "response" gives
-#' the predicted probabilities.
-#' @param ... currently disregarded
-#' @return a vector of predictions
-#' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
-#' predict(geefit, sampData)
-#'
-#' @export
-predict.gee1step <- function(object, data, type = "link", ...) {
-
-  beta <- object$estimate$est
-  X <- object$xnames
-
-  logodds <- as.vector(cbind(1, as.matrix(data[, ..X])) %*% beta)
-
-  ### post-declaration to avoid CHECK note - seems to work
-  ..X <- NULL
-
-  if (type == "link") {
-    return(logodds)
-  } else if (type == "response") {
-    return(1/(exp(-logodds) + 1))
-  }
-
 }
 

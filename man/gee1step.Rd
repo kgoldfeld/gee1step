@@ -26,3 +26,8 @@ geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
 geefit
 
 }
+\references{
+Lipsitz, S., Fitzmaurice, G., Sinha, D., Hevelone, N., Hu, J.,
+& Nguyen, L. L. (2017). One-step generalized estimating equations with large
+cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
+}
