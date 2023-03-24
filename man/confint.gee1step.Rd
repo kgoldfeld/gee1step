@@ -2,7 +2,7 @@
 % Please edit documentation in R/methods.R
 \name{confint.gee1step}
 \alias{confint.gee1step}
-\title{Confidence intervals gee1step model parameters}
+\title{Confidence intervals for gee1step model parameters}
 \usage{
 \method{confint}{gee1step}(object, parm, level = 0.95, ...)
 }
@@ -21,7 +21,7 @@ parameters are considered.}
 nothing is returned
 }
 \description{
-Confidence intervals gee1step model parameters
+Confidence intervals for gee1step model parameters
 }
 \examples{
 geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")

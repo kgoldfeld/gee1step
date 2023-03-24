@@ -176,7 +176,7 @@ f.perc <- function (x, ...)
   else character(0)
 }
 
-#' Confidence intervals gee1step model parameters
+#' Confidence intervals for gee1step model parameters
 #' @param object a fitted gee1step model object
 #' @param parm a specification of which parameters are to be given confidence
 #' intervals, either a vector of numbers or a vector of names. If missing, all
