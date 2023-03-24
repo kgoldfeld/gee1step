@@ -179,18 +179,12 @@ gee1step <- function(formula, data, cluster, ...) {
   vb <- solve(dvd) %*% uusq %*% solve(dvd)
   beta2 <- as.vector(beta2)
 
-  n_clusters <- nrow(drho)
-  avg_cluster_size <- drho[, mean(N)]
-  min_cluster_size <- drho[, min(N)]
-  max_cluster_size <- drho[, max(N)]
-
   rm(.X, ..X)
 
   result <- list(beta = beta2,
                  vb = vb,
                  rho = rho,
-                 clustersum = list (n_clusters = n_clusters,
-                                  avg_size = avg_cluster_size, min_size = min_cluster_size, max_size = max_cluster_size),
+                 cluster_sizes = as.vector(drho[, N]),
                  outcome = Y,
                  formula = formula,
                  xnames = X,

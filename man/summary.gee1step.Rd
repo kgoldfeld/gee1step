@@ -13,7 +13,8 @@
 }
 \value{
 a \eqn{p \times 4} matrix with columns for the estimated coefficient,
-its standard error, z-statistic and corresponding (two-sided) p-value.
+its standard error, z-statistic and corresponding (two-sided) p-value, the
+ICC, and summary of cluster sizes.
 }
 \description{
 Summarizing gee1step model fits
