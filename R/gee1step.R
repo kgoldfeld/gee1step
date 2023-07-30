@@ -1,4 +1,6 @@
 #' Estimate parameters using one-step algorithm
+#' @useDynLib gee1step, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 #' @import data.table
 #' @param formula an object of class "formula": a symbolic description of the model to be fitted.
 #' @param data a required data frame or data.table containing the variables in the model.
@@ -105,7 +107,7 @@ gee1step <- function(formula, data, cluster, ...) {
   dsum <- merge(dz, dsum)
 
   dm <- lapply(c("intz", .X),
-               function(x) dsum[, get(x) * sqrt(rho / ( (1 - rho) + N * rho))] )
+    function(x) dsum[, get(x) * sqrt(rho / ( (1 - rho) + N * rho))] )
   M <- do.call(cbind, dm)
 
   dvd_add <- t(M) %*% M
@@ -124,7 +126,7 @@ gee1step <- function(formula, data, cluster, ...) {
 
   ### Estimate robust standard errors
 
-  dr <- copy(data)
+  dr <- data.table::copy(data)
   dvars <- as.matrix(cbind(1, dr[, cbind(mget(X))]))
 
   lodds <-  dvars %*% beta2
