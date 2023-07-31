@@ -11,7 +11,7 @@
 # geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
 # geefit
 #
-gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ...) {
+gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -30,13 +30,14 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
   dx[, .xintercept := 1]
   dr <- data.table::copy(dx) # for robust se
 
-  glmfit <- stats::glm(formula, data = dx, family = stats::gaussian) # specific to dist
+  glmfit <- stats::glm(formula, data = dx, family = stats::binomial) # specific to dist
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
-  dx[, v := var(resid(glmfit))] # specific to dist
+  dx[, v := p*(1-p)] # specific to dist
   dx[, resid := (get(Y) - p) / sqrt(v) ]
 
   dX <- dx[, ..X]
+  dX <- dX * dx[, p*(1-p)] # specific to dist
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
 
@@ -47,7 +48,7 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
       .N,
       sum_r = sum(resid),
       uss_r = sum(resid^2)
-  ), keyby = cluster]
+    ), keyby = cluster]
 
   drho[, wt_ij := ( N * (N-1) / 2)]
   drho[, rho_ij := sum_r^2 - uss_r ]
@@ -68,12 +69,14 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
 
   dvars <- as.matrix(dr[, ..X])
 
-  dr[, p:= dvars %*% beta2] # specific to dist
-  dr[, v:= var(get(Y) - p)] # specific to dist
+  dr[, lodds := dvars %*% beta2] # specific to dist
+  dr[, p := 1/(1 + exp(-lodds))] # specific to dist
+  dr[, v := p * (1 - p)] #  # specific to dist
   dr[, resid := ( get(Y) - p) / sqrt( v )]
   dr[, residv := ( get(Y) - p) / v ]
 
-  dR <- dr[, ..X] # specific to dist
+  dR <- dr[, ..X]
+  dR <- dR * dr[, p*(1-p)] # specific to dist
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
 
@@ -86,16 +89,16 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
   ### Get results
 
   vb <- solve(W) %*% U %*% solve(W)
-  beta2 <- as.vector(beta2)
 
-  result <- list(beta = beta2,
+
+  result <- list(beta =  as.vector(beta2),
                  vb = vb,
                  rho = rho,
                  cluster_sizes = as.vector(drho[, N]),
                  outcome = Y,
                  formula = formula,
                  xnames = X[-1],
-                 family = "gaussian",
+                 family = "binomial",
                  call = match.call()
   )
 
@@ -103,4 +106,11 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
 
   return(result)
 }
+
+
+
+
+
+
+
 
