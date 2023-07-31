@@ -8,7 +8,7 @@
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
 #
-gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
+gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call, ...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -25,6 +25,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
   .xintercept <- NULL
   v <- NULL
   residv <- NULL
+  Y <- NULL
 
   ###
 
@@ -32,7 +33,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
 
   xnames <- names(dx)
   xnames <- xnames[2:(length(xnames) - 2)] # exclude intercept, Y, and cluster
-  newform <- as.formula(paste("Y ~ ", paste(xnames, collapse = "+")))
+  newform <- stats::as.formula(paste("Y ~ ", paste(xnames, collapse = "+")))
 
   glmfit <- stats::glm(newform, data = dx, family = stats::gaussian) # specific to dist
 
@@ -102,7 +103,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
                  formula = formula,
                  xnames = X_[-1],
                  family = "gaussian",
-                 call = match.call()
+                 call = orig_call
   )
 
   attr(result, "class") <- "gee1step"

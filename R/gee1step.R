@@ -19,9 +19,12 @@
 #' @export
 gee1step <- function(formula, data, cluster, family, ...) {
 
+  original_call <- match.call()
+
   # "declare" vars to avoid global NOTE
 
   cname_ <- NULL
+  Y <- NULL
 
   ###
 
@@ -45,7 +48,7 @@ gee1step <- function(formula, data, cluster, family, ...) {
     stop(paste("Cluster variable", cluster, "is not in data set"))
   }
 
-  MM <- model.matrix(formula, data = data)
+  MM <- stats::model.matrix(formula, data = data)
 
   Y_ <- all.vars(formula)[1]
   X_ <- colnames(MM)
@@ -65,10 +68,10 @@ gee1step <- function(formula, data, cluster, family, ...) {
   ### Call proper family
 
   if (family == "binomial")  {
-    result <- gee1step.binomial(dx, formula, X_, Y_, namesd, N_clusters)
+    result <- gee1step.binomial(dx, formula, X_, Y_, namesd, N_clusters, original_call)
   }
   else if (family == "gaussian") {
-    result <- gee1step.gaussian(dx, formula, X_, Y_, namesd, N_clusters)
+    result <- gee1step.gaussian(dx, formula, X_, Y_, namesd, N_clusters, original_call)
   }
 
   return(result)
