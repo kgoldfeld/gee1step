@@ -5,7 +5,7 @@
 #' @param formula an object of class "formula": a symbolic description of the model to be fitted.
 #' @param data a required data frame or data.table containing the variables in the model.
 #' @param cluster the name of the field that identifies the clusters.
-#' @param family the distribution family: gaussian, binomial
+#' @param family the distribution family: gaussian, binomial, and poisson
 #' @param ... currently disregarded
 #' @references Lipsitz, S., Fitzmaurice, G., Sinha, D., Hevelone, N., Hu, J.,
 #' & Nguyen, L. L. (2017). One-step generalized estimating equations with large
@@ -72,6 +72,9 @@ gee1step <- function(formula, data, cluster, family, ...) {
   }
   else if (family == "gaussian") {
     result <- gee1step.gaussian(dx, formula, X_, Y_, namesd, N_clusters, original_call)
+  }
+  else if (family == "poisson") {
+    result <- gee1step.poisson(dx, formula, X_, Y_, namesd, N_clusters, original_call)
   }
 
   return(result)
