@@ -45,9 +45,10 @@ gee1step <- function(formula, data, cluster, family, ...) {
     stop(paste("Cluster variable", cluster, "is not in data set"))
   }
 
+  MM <- model.matrix(formula, data = data)
+
   Y_ <- all.vars(formula)[1]
-  X_ <- all.vars(formula, unique = FALSE)[-1]
-  X_ <- c(".xintercept", X_)
+  X_ <- colnames(MM)
 
   if (Y_ %in% X_) {
     stop(paste("Outcome variable", Y_, "cannot also be a predictor"))
@@ -55,8 +56,9 @@ gee1step <- function(formula, data, cluster, family, ...) {
 
   namesd <- paste0("d.", X_)
 
-  dx <- data.table::copy(data)
-  dx[, cname_ := get(cluster)]
+  dx <- data.table::data.table(MM)
+  dx[, cname_ := data[, get(cluster)] ]
+  dx[, Y := data[, get(Y_)] ]
 
   N_clusters <- length(unique(dx[, cname_]))
 

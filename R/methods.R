@@ -53,7 +53,7 @@ summary.gee1step <- function(object, ...) {
   p.value <- 2*stats::pnorm(-abs(z))
 
   estimates <- data.frame(est = object$beta, se.err = se.vb, z = z, p.value = p.value)
-  rownames(estimates) <-  c("Intercept", labels(stats::terms(object$formula)))
+  rownames(estimates) <-  c("Intercept", object$xnames)
 
   n_clusters <- length(object$cluster_sizes)
   avg_cluster_size <- mean(object$cluster_sizes)

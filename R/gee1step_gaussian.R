@@ -28,14 +28,17 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
 
   ###
 
-  dx[, .xintercept := 1]
   dr <- data.table::copy(dx) # for robust se
 
-  glmfit <- stats::glm(formula, data = dx, family = stats::gaussian) # specific to dist
+  xnames <- names(dx)
+  xnames <- xnames[2:(length(xnames) - 2)] # exclude intercept, Y, and cluster
+  newform <- as.formula(paste("Y ~ ", paste(xnames, collapse = "+")))
+
+  glmfit <- stats::glm(newform, data = dx, family = stats::gaussian) # specific to dist
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
   dx[, v := stats::var(resid(glmfit))] # specific to dist
-  dx[, resid := (get(Y_) - p) / sqrt(v) ]
+  dx[, resid := ( Y - p ) / sqrt(v) ]
 
   dX <- dx[, X_, with = FALSE]
   setnames(dX, namesd)
@@ -48,7 +51,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
       .N,
       sum_r = sum(resid),
       uss_r = sum(resid^2)
-  ), keyby = cluster]
+  ), keyby = cname_]
 
   drho[, wt_ij := ( N * (N-1) / 2)]
   drho[, rho_ij := sum_r^2 - uss_r ]
@@ -70,9 +73,9 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
   dvars <- as.matrix(dr[, X_, with = FALSE])
 
   dr[, p:= dvars %*% beta2] # specific to dist
-  dr[, v:= stats::var(get(Y_) - p)] # specific to dist
-  dr[, resid := ( get(Y_) - p) / sqrt( v )]
-  dr[, residv := ( get(Y_) - p) / v ]
+  dr[, v:= stats::var( Y - p )] # specific to dist
+  dr[, resid := ( Y - p ) / sqrt( v )]
+  dr[, residv := ( Y - p ) / v ]
 
   dR <- dr[, X_, with = FALSE] # specific to dist
   setnames(dR, namesd)

@@ -29,14 +29,17 @@ gee1step.binomial <- function(dx, formula, X_, Y_, namesd, N_clusters,...) {
 
   ###
 
-  dx[, .xintercept := 1]
   dr <- data.table::copy(dx) # for robust se
 
-  glmfit <- stats::glm(formula, data = dx, family = stats::binomial) # specific to dist
+  xnames <- names(dx)
+  xnames <- xnames[2:(length(xnames) - 2)] # exclude intercept, Y, and cluster
+  newform <- as.formula(paste("Y ~ ", paste(xnames, collapse = "+")))
+
+  glmfit <- stats::glm(newform, data = dx, family = stats::binomial) # specific to dist
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
   dx[, v := p*(1-p)] # specific to dist
-  dx[, resid := (get(Y_) - p) / sqrt(v) ]
+  dx[, resid := (Y - p) / sqrt(v) ]
 
   dX <- dx[, X_, with = FALSE]
   dX <- dX * dx[, p*(1-p)] # specific to dist
@@ -50,7 +53,7 @@ gee1step.binomial <- function(dx, formula, X_, Y_, namesd, N_clusters,...) {
       .N,
       sum_r = sum(resid),
       uss_r = sum(resid^2)
-    ), keyby = cluster]
+    ), keyby = cname_]
 
   drho[, wt_ij := ( N * (N-1) / 2)]
   drho[, rho_ij := sum_r^2 - uss_r ]
@@ -74,8 +77,8 @@ gee1step.binomial <- function(dx, formula, X_, Y_, namesd, N_clusters,...) {
   dr[, lodds := dvars %*% beta2] # specific to dist
   dr[, p := 1/(1 + exp(-lodds))] # specific to dist
   dr[, v := p * (1 - p)] #  # specific to dist
-  dr[, resid := ( get(Y_) - p) / sqrt( v )]
-  dr[, residv := ( get(Y_) - p) / v ]
+  dr[, resid := ( Y - p) / sqrt( v )]
+  dr[, residv := ( Y - p) / v ]
 
   dR <- dr[, X_, with = FALSE]
   dR <- dR * dr[, p*(1-p)] # specific to dist
