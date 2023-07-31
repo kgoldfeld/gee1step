@@ -10,8 +10,9 @@
 #' @param ... currently disregarded
 #' @return a vector of predictions
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
-#' predict(geefit, sampData)
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family="binomial")
+#' predict(geefit, sampData_binomial)
 #'
 #' @export
 predict.gee1step <- function(object, data, type = "link", ...) {
@@ -40,7 +41,8 @@ predict.gee1step <- function(object, data, type = "link", ...) {
 #' its standard error, z-statistic and corresponding (two-sided) p-value, the
 #' ICC, and summary of cluster sizes.
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family="binomial")
 #' summary(geefit)
 #'
 #' @export
@@ -51,7 +53,7 @@ summary.gee1step <- function(object, ...) {
   p.value <- 2*stats::pnorm(-abs(z))
 
   estimates <- data.frame(est = object$beta, se.err = se.vb, z = z, p.value = p.value)
-  rownames(estimates) <-  c("Intercept", labels(stats::terms(object$formula)))
+  rownames(estimates) <-  c("Intercept", object$xnames)
 
   n_clusters <- length(object$cluster_sizes)
   avg_cluster_size <- mean(object$cluster_sizes)
@@ -76,7 +78,8 @@ summary.gee1step <- function(object, ...) {
 #' @param ... currently disregarded
 #' @return a vector of length \eqn{p} that represents the parameter estimates.
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family="binomial")
 #' coef(geefit)
 #'
 #' @export
@@ -95,7 +98,8 @@ coef.gee1step <- function(object, ...) {
 #' @return a matrix of dimension \eqn{p \timts p} that represents the parameter
 #' variance-covariance matrix
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family="binomial")
 #' vcov(geefit)
 #'
 #' @export
@@ -115,7 +119,8 @@ vcov.gee1step <- function(object, ...) {
 #' @param ... currently disregarded
 #' @return nothing is returned
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family="binomial")
 #' print(geefit)
 #'
 #'@export
@@ -140,7 +145,7 @@ print.gee1step <- function(x, digits = max(3L, getOption("digits") - 3L), ...)
 #' @param ... currently disregarded
 #' @return nothing is returned
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial, cluster = "site", family="binomial")
 #' print(geefit)
 #'
 #' @export
@@ -185,7 +190,8 @@ f.perc <- function (x, ...)
 #' @param ... currently disregarded
 #' @return nothing is returned
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family="binomial")
 #' confint(geefit)
 #'
 #' @export

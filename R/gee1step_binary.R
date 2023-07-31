@@ -8,7 +8,7 @@
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
 #
-gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call, ...) {
+gee1step.binomial <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call, ...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -24,6 +24,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
   cname_ <- NULL
   .xintercept <- NULL
   v <- NULL
+  lodds <- NULL
   residv <- NULL
   Y <- NULL
 
@@ -35,13 +36,14 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
   xnames <- xnames[2:(length(xnames) - 2)] # exclude intercept, Y, and cluster
   newform <- stats::as.formula(paste("Y ~ ", paste(xnames, collapse = "+")))
 
-  glmfit <- stats::glm(newform, data = dx, family = stats::gaussian) # specific to dist
+  glmfit <- stats::glm(newform, data = dx, family = stats::binomial) # specific to dist
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
-  dx[, v := stats::var(resid(glmfit))] # specific to dist
-  dx[, resid := ( Y - p ) / sqrt(v) ]
+  dx[, v := p*(1-p)] # specific to dist
+  dx[, resid := (Y - p) / sqrt(v) ]
 
   dX <- dx[, X_, with = FALSE]
+  dX <- dX * dx[, p*(1-p)] # specific to dist
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
 
@@ -52,7 +54,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
       .N,
       sum_r = sum(resid),
       uss_r = sum(resid^2)
-  ), keyby = cname_]
+    ), keyby = cname_]
 
   drho[, wt_ij := ( N * (N-1) / 2)]
   drho[, rho_ij := sum_r^2 - uss_r ]
@@ -73,12 +75,14 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
 
   dvars <- as.matrix(dr[, X_, with = FALSE])
 
-  dr[, p:= dvars %*% beta2] # specific to dist
-  dr[, v:= stats::var( Y - p )] # specific to dist
-  dr[, resid := ( Y - p ) / sqrt( v )]
-  dr[, residv := ( Y - p ) / v ]
+  dr[, lodds := dvars %*% beta2] # specific to dist
+  dr[, p := 1/(1 + exp(-lodds))] # specific to dist
+  dr[, v := p * (1 - p)] #  # specific to dist
+  dr[, resid := ( Y - p) / sqrt( v )]
+  dr[, residv := ( Y - p) / v ]
 
-  dR <- dr[, X_, with = FALSE] # specific to dist
+  dR <- dr[, X_, with = FALSE]
+  dR <- dR * dr[, p*(1-p)] # specific to dist
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
 
@@ -93,16 +97,15 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
   # vb <- MASS::ginv(W) %*% U %*% MASS::ginv(W) # maybe make this an option?
   vb <- solve(W) %*% U %*% solve(W)
 
-  beta2 <- as.vector(beta2)
 
-  result <- list(beta = beta2,
+  result <- list(beta =  as.vector(beta2),
                  vb = vb,
                  rho = rho,
                  cluster_sizes = as.vector(drho[, N]),
                  outcome = Y_,
                  formula = formula,
                  xnames = X_[-1],
-                 family = "gaussian",
+                 family = "binomial",
                  call = orig_call
   )
 
@@ -110,4 +113,11 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
 
   return(result)
 }
+
+
+
+
+
+
+
 
