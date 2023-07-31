@@ -24,7 +24,8 @@ nothing is returned
 Confidence intervals for gee1step model parameters
 }
 \examples{
-geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
+geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+  cluster = "site", family="binomial")
 confint(geefit)
 
 }

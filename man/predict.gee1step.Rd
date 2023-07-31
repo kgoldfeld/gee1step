@@ -27,7 +27,8 @@ a vector of predictions
 Predict method for gee1step model fits
 }
 \examples{
-geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
-predict(geefit, sampData)
+geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+  cluster = "site", family="binomial")
+predict(geefit, sampData_binomial)
 
 }

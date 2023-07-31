@@ -7,9 +7,6 @@
 # & Nguyen, L. L. (2017). One-step generalized estimating equations with large
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
-# @examples
-# geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
-# geefit
 #
 gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ...) {
 
@@ -24,6 +21,10 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
   sum_r <- NULL
   uss_r <- NULL
   N <- NULL
+  cname_ <- NULL
+  .xintercept <- NULL
+  v <- NULL
+  residv <- NULL
 
   ###
 
@@ -33,10 +34,10 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
   glmfit <- stats::glm(formula, data = dx, family = stats::gaussian) # specific to dist
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
-  dx[, v := var(resid(glmfit))] # specific to dist
+  dx[, v := stats::var(resid(glmfit))] # specific to dist
   dx[, resid := (get(Y) - p) / sqrt(v) ]
 
-  dX <- dx[, ..X]
+  dX <- dx[, X, with = FALSE]
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
 
@@ -66,14 +67,14 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
 
   ### Robust se
 
-  dvars <- as.matrix(dr[, ..X])
+  dvars <- as.matrix(dr[, X, with = FALSE])
 
   dr[, p:= dvars %*% beta2] # specific to dist
-  dr[, v:= var(get(Y) - p)] # specific to dist
+  dr[, v:= stats::var(get(Y) - p)] # specific to dist
   dr[, resid := ( get(Y) - p) / sqrt( v )]
   dr[, residv := ( get(Y) - p) / v ]
 
-  dR <- dr[, ..X] # specific to dist
+  dR <- dr[, X, with = FALSE] # specific to dist
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
 

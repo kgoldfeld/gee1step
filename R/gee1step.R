@@ -12,11 +12,18 @@
 #' cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 #' @return a "gee1step" object
 #' @examples
-#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binary, cluster = "site", family = "binomial")
+#' geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+#'   cluster = "site", family = "binomial")
 #' geefit
 #'
 #' @export
 gee1step <- function(formula, data, cluster, family, ...) {
+
+  # "declare" vars to avoid global NOTE
+
+  cname_ <- NULL
+
+  ###
 
   ### Check arguments
 

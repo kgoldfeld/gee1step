@@ -2,7 +2,14 @@
 
 .getD <- function(dd, namesd, rho) {
 
-  d <- as.matrix(dd[, ..namesd])
+  # "declare" vars to avoid global NOTE
+
+  v <- NULL
+  resid <- NULL
+
+  ###
+
+  d <- as.matrix(dd[, namesd, with = FALSE])
   sqrtv <- dd[, sqrt(v)]
   resid <- dd[, resid]
 
@@ -15,7 +22,14 @@
 
 .getW <- function(dd, namesd, rho) {
 
-  d <- as.matrix(dd[, ..namesd])
+  # "declare" vars to avoid global NOTE
+
+  v <- NULL
+
+  ###
+
+
+  d <- as.matrix(dd[, namesd, with = FALSE])
   v <- dd[, v]
   sqrtv <- dd[, sqrt(v)]
 
@@ -28,7 +42,15 @@
 
 .getU <- function(dd, namesd, rho) {
 
-  d <- as.matrix(dd[, ..namesd])
+  # "declare" vars to avoid global NOTE
+
+  v <- NULL
+  resid <- NULL
+  residv <- NULL
+
+  ###
+
+  d <- as.matrix(dd[, namesd, with = FALSE])
   residv <- dd[, residv]
   resid <- dd[, resid]
   sqrtv <- dd[, sqrt(v)]

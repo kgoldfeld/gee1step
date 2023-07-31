@@ -24,7 +24,8 @@ a "gee1step" object
 Estimate parameters using one-step algorithm
 }
 \examples{
-geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binary, cluster = "site", family = "binomial")
+geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData_binomial,
+  cluster = "site", family = "binomial")
 geefit
 
 }

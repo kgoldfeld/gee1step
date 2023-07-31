@@ -7,9 +7,6 @@
 # & Nguyen, L. L. (2017). One-step generalized estimating equations with large
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
-# @examples
-# geefit <- gee1step(y ~ x1 + x2 + x3, data = sampData, cluster = "site")
-# geefit
 #
 gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...) {
 
@@ -24,6 +21,11 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
   sum_r <- NULL
   uss_r <- NULL
   N <- NULL
+  cname_ <- NULL
+  .xintercept <- NULL
+  v <- NULL
+  lodds <- NULL
+  residv <- NULL
 
   ###
 
@@ -36,7 +38,7 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
   dx[, v := p*(1-p)] # specific to dist
   dx[, resid := (get(Y) - p) / sqrt(v) ]
 
-  dX <- dx[, ..X]
+  dX <- dx[, X, with = FALSE]
   dX <- dX * dx[, p*(1-p)] # specific to dist
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
@@ -67,7 +69,7 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
 
   ### Robust se
 
-  dvars <- as.matrix(dr[, ..X])
+  dvars <- as.matrix(dr[, X, with = FALSE])
 
   dr[, lodds := dvars %*% beta2] # specific to dist
   dr[, p := 1/(1 + exp(-lodds))] # specific to dist
@@ -75,7 +77,7 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
   dr[, resid := ( get(Y) - p) / sqrt( v )]
   dr[, residv := ( get(Y) - p) / v ]
 
-  dR <- dr[, ..X]
+  dR <- dr[, X, with = FALSE]
   dR <- dR * dr[, p*(1-p)] # specific to dist
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
