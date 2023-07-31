@@ -13,7 +13,7 @@ gee1step(formula, data, cluster, family, ...)
 
 \item{cluster}{the name of the field that identifies the clusters.}
 
-\item{family}{the distribution family: gaussian, binomial}
+\item{family}{the distribution family: gaussian, binomial, and poisson}
 
 \item{...}{currently disregarded}
 }
