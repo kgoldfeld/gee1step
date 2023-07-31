@@ -8,7 +8,7 @@
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
 #
-gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ...) {
+gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -35,9 +35,9 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
   dx[, v := stats::var(resid(glmfit))] # specific to dist
-  dx[, resid := (get(Y) - p) / sqrt(v) ]
+  dx[, resid := (get(Y_) - p) / sqrt(v) ]
 
-  dX <- dx[, X, with = FALSE]
+  dX <- dx[, X_, with = FALSE]
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
 
@@ -67,14 +67,14 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
 
   ### Robust se
 
-  dvars <- as.matrix(dr[, X, with = FALSE])
+  dvars <- as.matrix(dr[, X_, with = FALSE])
 
   dr[, p:= dvars %*% beta2] # specific to dist
-  dr[, v:= stats::var(get(Y) - p)] # specific to dist
-  dr[, resid := ( get(Y) - p) / sqrt( v )]
-  dr[, residv := ( get(Y) - p) / v ]
+  dr[, v:= stats::var(get(Y_) - p)] # specific to dist
+  dr[, resid := ( get(Y_) - p) / sqrt( v )]
+  dr[, residv := ( get(Y_) - p) / v ]
 
-  dR <- dr[, X, with = FALSE] # specific to dist
+  dR <- dr[, X_, with = FALSE] # specific to dist
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
 
@@ -86,16 +86,18 @@ gee1step.gaussian <- function(dx, formula, X, Y, namesd, cluster, N_clusters, ..
 
   ### Get results
 
+  # vb <- MASS::ginv(W) %*% U %*% MASS::ginv(W) # maybe make this an option?
   vb <- solve(W) %*% U %*% solve(W)
+
   beta2 <- as.vector(beta2)
 
   result <- list(beta = beta2,
                  vb = vb,
                  rho = rho,
                  cluster_sizes = as.vector(drho[, N]),
-                 outcome = Y,
+                 outcome = Y_,
                  formula = formula,
-                 xnames = X[-1],
+                 xnames = X_[-1],
                  family = "gaussian",
                  call = match.call()
   )

@@ -8,7 +8,7 @@
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
 #
-gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...) {
+gee1step.binomial <- function(dx, formula, X_, Y_, namesd, N_clusters,...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -36,9 +36,9 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
   dx[, v := p*(1-p)] # specific to dist
-  dx[, resid := (get(Y) - p) / sqrt(v) ]
+  dx[, resid := (get(Y_) - p) / sqrt(v) ]
 
-  dX <- dx[, X, with = FALSE]
+  dX <- dx[, X_, with = FALSE]
   dX <- dX * dx[, p*(1-p)] # specific to dist
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
@@ -69,15 +69,15 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
 
   ### Robust se
 
-  dvars <- as.matrix(dr[, X, with = FALSE])
+  dvars <- as.matrix(dr[, X_, with = FALSE])
 
   dr[, lodds := dvars %*% beta2] # specific to dist
   dr[, p := 1/(1 + exp(-lodds))] # specific to dist
   dr[, v := p * (1 - p)] #  # specific to dist
-  dr[, resid := ( get(Y) - p) / sqrt( v )]
-  dr[, residv := ( get(Y) - p) / v ]
+  dr[, resid := ( get(Y_) - p) / sqrt( v )]
+  dr[, residv := ( get(Y_) - p) / v ]
 
-  dR <- dr[, X, with = FALSE]
+  dR <- dr[, X_, with = FALSE]
   dR <- dR * dr[, p*(1-p)] # specific to dist
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
@@ -90,6 +90,7 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
 
   ### Get results
 
+  # vb <- MASS::ginv(W) %*% U %*% MASS::ginv(W) # maybe make this an option?
   vb <- solve(W) %*% U %*% solve(W)
 
 
@@ -97,9 +98,9 @@ gee1step.binomial <- function(dx, formula, X, Y, namesd, cluster, N_clusters,...
                  vb = vb,
                  rho = rho,
                  cluster_sizes = as.vector(drho[, N]),
-                 outcome = Y,
+                 outcome = Y_,
                  formula = formula,
-                 xnames = X[-1],
+                 xnames = X_[-1],
                  family = "binomial",
                  call = match.call()
   )

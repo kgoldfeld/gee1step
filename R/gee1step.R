@@ -45,15 +45,15 @@ gee1step <- function(formula, data, cluster, family, ...) {
     stop(paste("Cluster variable", cluster, "is not in data set"))
   }
 
-  Y <- all.vars(formula)[1]
-  X <- all.vars(formula, unique = FALSE)[-1]
-  X <- c(".xintercept", X)
+  Y_ <- all.vars(formula)[1]
+  X_ <- all.vars(formula, unique = FALSE)[-1]
+  X_ <- c(".xintercept", X_)
 
-  if (Y %in% X) {
-    stop(paste("Outcome variable", Y, "cannot also be a predictor"))
+  if (Y_ %in% X_) {
+    stop(paste("Outcome variable", Y_, "cannot also be a predictor"))
   }
 
-  namesd <- paste0("d.", X)
+  namesd <- paste0("d.", X_)
 
   dx <- data.table::copy(data)
   dx[, cname_ := get(cluster)]
@@ -63,10 +63,10 @@ gee1step <- function(formula, data, cluster, family, ...) {
   ### Call proper family
 
   if (family == "binomial")  {
-    result <- gee1step.binomial(dx, formula, X, Y, namesd, cluster, N_clusters)
+    result <- gee1step.binomial(dx, formula, X_, Y_, namesd, N_clusters)
   }
   else if (family == "gaussian") {
-    result <- gee1step.gaussian(dx, formula, X, Y, namesd, cluster, N_clusters)
+    result <- gee1step.gaussian(dx, formula, X_, Y_, namesd, N_clusters)
   }
 
   return(result)

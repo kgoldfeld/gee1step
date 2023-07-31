@@ -28,7 +28,6 @@
 
   ###
 
-
   d <- as.matrix(dd[, namesd, with = FALSE])
   v <- dd[, v]
   sqrtv <- dd[, sqrt(v)]
