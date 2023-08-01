@@ -19,12 +19,13 @@
 #' @export
 gee1step <- function(formula, data, cluster, family, ...) {
 
-  original_call <- match.call()
+  orig.formula <- formula
 
   # "declare" vars to avoid global NOTE
 
   cname_ <- NULL
   Y <- NULL
+  N <- NULL
 
   ###
 
@@ -63,19 +64,33 @@ gee1step <- function(formula, data, cluster, family, ...) {
   dx[, cname_ := data[, get(cluster)] ]
   dx[, Y := data[, get(Y_)] ]
 
+  formula <- stats::update(formula, Y ~ .)
+
   N_clusters <- length(unique(dx[, cname_]))
 
   ### Call proper family
 
   if (family == "binomial")  {
-    result <- gee1step.binomial(dx, formula, X_, Y_, namesd, N_clusters, original_call)
+    result <- gee1step.binomial(dx, formula, X_, Y_, namesd, N_clusters)
   }
   else if (family == "gaussian") {
-    result <- gee1step.gaussian(dx, formula, X_, Y_, namesd, N_clusters, original_call)
+    result <- gee1step.gaussian(dx, formula, X_, Y_, namesd, N_clusters)
   }
   else if (family == "poisson") {
-    result <- gee1step.poisson(dx, formula, X_, Y_, namesd, N_clusters, original_call)
+    result <- gee1step.poisson(dx, formula, X_, Y_, namesd, N_clusters)
   }
+
+  result <- append(
+    list(
+      call = match.call(),
+      formula = orig.formula,
+      family = family,
+      outcome = Y_,
+      xnames = X_,
+      model.data = MM,
+      cluster_sizes = as.vector(dx[, .N, keyby = cname_][, N])
+    ), result)
+  attr(result, "class") <- "gee1step"
 
   return(result)
 }

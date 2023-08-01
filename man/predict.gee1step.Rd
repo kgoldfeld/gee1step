@@ -4,13 +4,13 @@
 \alias{predict.gee1step}
 \title{Predict method for gee1step model fits}
 \usage{
-\method{predict}{gee1step}(object, data, type = "link", ...)
+\method{predict}{gee1step}(object, newdata = NULL, type = "link", ...)
 }
 \arguments{
 \item{object}{a fitted model object of class "gee1step".}
 
-\item{data}{a required data frame or data.table containing the variables
-in the model.}
+\item{newdata}{an optional data set with new covariate data. If no new data are
+provided, predictions are provided for the original data set.}
 
 \item{type}{the type of prediction required. The default ("link") is on the scale of
 the linear predictors; the alternative "response" is on the scale of the
