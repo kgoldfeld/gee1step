@@ -25,6 +25,7 @@ gee1step <- function(formula, data, cluster, family, ...) {
 
   cname_ <- NULL
   Y <- NULL
+  N <- NULL
 
   ###
 
@@ -79,7 +80,16 @@ gee1step <- function(formula, data, cluster, family, ...) {
     result <- gee1step.poisson(dx, formula, X_, Y_, namesd, N_clusters)
   }
 
-  result <- append(result, list(call = match.call(), model.data = MM, orig.formula = orig.formula))
+  result <- append(
+    list(
+      call = match.call(),
+      formula = orig.formula,
+      family = family,
+      outcome = Y_,
+      xnames = X_,
+      model.data = MM,
+      cluster_sizes = as.vector(dx[, .N, keyby = cname_][, N])
+    ), result)
   attr(result, "class") <- "gee1step"
 
   return(result)

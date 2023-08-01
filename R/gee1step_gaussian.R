@@ -94,12 +94,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
 
   result <- list(beta = as.vector(beta2),
                  vb = vb,
-                 rho = rho,
-                 cluster_sizes = as.vector(drho[, N]),
-                 outcome = Y_,
-                 formula = formula,
-                 xnames = X_,
-                 family = "gaussian"
+                 rho = rho
   )
 
   return(result)

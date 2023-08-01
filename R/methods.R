@@ -20,22 +20,35 @@ predict.gee1step <- function(object, newdata=NULL, type = "link", ...) {
   if (! is.null(newdata)) {
     newdata <- data.table::as.data.table(newdata)
     newdata[, (object$outcome) := 0]
-    newdata <- stats::model.matrix(object$orig.formula, newdata)
+    newdata <- stats::model.matrix(object$formula, newdata)
   }
   else {
     newdata <- object$model.data
   }
 
   beta <- object$beta
+  pred <- as.vector(as.matrix(newdata) %*% beta)
 
-  ### Need to fix this to accommodate other distributions
+  if (object$family == "binomial") {
+    if (type == "link") {
+      return(pred)
+    }
+    else if (type == "response") {
+      return(1/(exp(-pred) + 1))
+    }
+  }
 
-  logodds <- as.vector(as.matrix(newdata) %*% beta)
+  else if (object$family == "poisson") {
+    if (type == "link") {
+      return(pred)
+    }
+    else if (type == "response") {
+      return(exp(pred))
+    }
+  }
 
-  if (type == "link") {
-    return(logodds)
-  } else if (type == "response") {
-    return(1/(exp(-logodds) + 1))
+  else if (object$family == "gaussian") {
+    return(pred)
   }
 
 }

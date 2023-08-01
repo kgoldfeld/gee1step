@@ -98,12 +98,7 @@ gee1step.poisson <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
 
   result <- list(beta = as.vector(beta2),
                  vb = vb,
-                 rho = rho,
-                 cluster_sizes = as.vector(drho[, N]),
-                 outcome = Y_,
-                 formula = formula,
-                 xnames = X_,
-                 family = "poisson"
+                 rho = rho
   )
 
   return(result)
