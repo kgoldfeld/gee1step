@@ -8,7 +8,7 @@
 # cluster sizes. Journal of Computational and Graphical Statistics, 26(3), 734-737.
 # @return a "gee1step" object
 #
-gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call, ...) {
+gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, ...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -32,10 +32,9 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
   dr <- data.table::copy(dx) # for robust se
 
   xnames <- names(dx)
-  xnames <- xnames[2:(length(xnames) - 2)] # exclude intercept, Y, and cluster
-  newform <- stats::as.formula(paste("Y ~ ", paste(xnames, collapse = "+")))
+  xnames <- xnames[1:( length(xnames) - 2)] # exclude Y, and cluster
 
-  glmfit <- stats::glm(newform, data = dx, family = stats::gaussian) # specific to dist
+  glmfit <- stats::glm(formula, data = dx, family = stats::gaussian) # specific to dist
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
   dx[, v := stats::var(resid(glmfit))] # specific to dist
@@ -93,20 +92,15 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, orig_call
   # vb <- MASS::ginv(W) %*% U %*% MASS::ginv(W) # maybe make this an option?
   vb <- solve(W) %*% U %*% solve(W)
 
-  beta2 <- as.vector(beta2)
-
-  result <- list(beta = beta2,
+  result <- list(beta = as.vector(beta2),
                  vb = vb,
                  rho = rho,
                  cluster_sizes = as.vector(drho[, N]),
                  outcome = Y_,
                  formula = formula,
-                 xnames = X_[-1],
-                 family = "gaussian",
-                 call = orig_call
+                 xnames = X_,
+                 family = "gaussian"
   )
-
-  attr(result, "class") <- "gee1step"
 
   return(result)
 }

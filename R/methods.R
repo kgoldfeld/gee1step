@@ -1,7 +1,7 @@
 #' Predict method for gee1step model fits
 #' @param object a fitted model object of class "gee1step".
-#' @param data a required data frame or data.table containing the variables
-#' in the model.
+#' @param newdata an optional data set with new covariate data. If no new data are
+#' provided, predictions are provided for the original data set.
 #' @param type the type of prediction required. The default ("link") is on the scale of
 #' the linear predictors; the alternative "response" is on the scale of the
 #' response variable. For this model (a binomial model) the default predictions
@@ -15,16 +15,22 @@
 #' predict(geefit, sampData_binomial)
 #'
 #' @export
-predict.gee1step <- function(object, data, type = "link", ...) {
+predict.gee1step <- function(object, newdata=NULL, type = "link", ...) {
 
-  data <- data.table::as.data.table(data)
+  if (! is.null(newdata)) {
+    newdata <- data.table::as.data.table(newdata)
+    newdata[, (object$outcome) := 0]
+    newdata <- stats::model.matrix(object$orig.formula, newdata)
+  }
+  else {
+    newdata <- object$model.data
+  }
+
   beta <- object$beta
-  X <- object$xnames
 
-  logodds <- as.vector(cbind(1, as.matrix(data[, ..X])) %*% beta)
+  ### Need to fix this to accommodate other distributions
 
-  ### post-declaration to avoid CHECK note - seems to work
-  ..X <- NULL
+  logodds <- as.vector(as.matrix(newdata) %*% beta)
 
   if (type == "link") {
     return(logodds)
@@ -53,7 +59,7 @@ summary.gee1step <- function(object, ...) {
   p.value <- 2*stats::pnorm(-abs(z))
 
   estimates <- data.frame(est = object$beta, se.err = se.vb, z = z, p.value = p.value)
-  rownames(estimates) <-  c("Intercept", object$xnames)
+  rownames(estimates) <-  object$xnames
 
   n_clusters <- length(object$cluster_sizes)
   avg_cluster_size <- mean(object$cluster_sizes)
@@ -86,7 +92,7 @@ summary.gee1step <- function(object, ...) {
 coef.gee1step <- function(object, ...) {
 
   beta = as.vector(object$beta)
-  names(beta) <- c("(Intercept)", object$xnames)
+  names(beta) <- object$xnames
 
   return(beta)
 
@@ -107,7 +113,7 @@ vcov.gee1step <- function(object, ...) {
 
   VCov = object$vb
 
-  names <- c("(Intercept)", object$xnames)
+  names <- object$xnames
   dimnames(VCov) <- list(names, names)
 
   return(VCov)
