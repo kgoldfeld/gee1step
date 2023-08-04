@@ -1,6 +1,6 @@
 # Internal estimation function
 #
-gee1step.dist <- function(dx, formula, family, X_, Y_, namesd, N_clusters, ...) {
+gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clusters, ...) {
 
   # "declare" vars to avoid global NOTE
 
@@ -24,13 +24,13 @@ gee1step.dist <- function(dx, formula, family, X_, Y_, namesd, N_clusters, ...) 
   xnames <- xnames[1:(length(xnames) - 2)] # exclude Y and cluster
 
   if (family == "binomial") {
-    glmfit <- stats::glm(formula, data = dx, family = stats::binomial)
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::binomial)
   }
   else if (family == "poisson") {
-    glmfit <- stats::glm(formula, data = dx, family = stats::poisson)
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::poisson)
   }
   else if (family == "gaussian") {
-    glmfit <- stats::glm(formula, data = dx, family = stats::gaussian)
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::gaussian)
   }
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
@@ -189,6 +189,9 @@ gee1step <- function(formula, data, cluster, family, ...) {
   Y_ <- all.vars(formula)[1]
   X_ <- colnames(MM)
 
+  orig.data <- copy(data) # need original data set to fit glm
+  setnames(orig.data, Y_, "Y") # since formula outcome changes (below)
+
   if (Y_ %in% X_) {
     stop(paste("Outcome variable", Y_, "cannot also be a predictor"))
   }
@@ -197,13 +200,13 @@ gee1step <- function(formula, data, cluster, family, ...) {
 
   dx <- data.table::data.table(MM)
   dx[, cname_ := data[, get(cluster)] ]
-  dx[, Y := data[, get(Y_)] ]
 
+  dx[, Y := data[, get(Y_)] ] # changing outcome to generic "Y"
   formula <- stats::update(formula, Y ~ .)
 
   N_clusters <- length(unique(dx[, cname_]))
 
-  mod.fit <- gee1step.dist(dx, formula, family, X_, Y_, namesd, N_clusters)
+  mod.fit <- gee1step.dist(orig.data, dx, formula, family, X_, Y_, namesd, N_clusters)
 
   result <- append(
     list(
