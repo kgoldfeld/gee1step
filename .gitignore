@@ -6,3 +6,6 @@ gee1step.Rproj
 .DS_Store
 data-raw/
 local-testing/
+src/*.o
+src/*.so
+src/*.dll
