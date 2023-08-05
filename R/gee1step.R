@@ -64,8 +64,8 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   drho <- dx[,
              list(
                .N,
-               sum_r = sum(resid),
-               uss_r = sum(resid^2)
+               sum_r = sum( resid ),
+               uss_r = sum( resid ^ 2 )
              ), keyby = cname_]
 
   drho[, wt_ij := ( N * (N-1) / 2)]
