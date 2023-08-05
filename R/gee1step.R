@@ -21,27 +21,26 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   dr <- data.table::copy(dx) # for robust se
 
   xnames <- names(dx)
-  xnames <- xnames[1:(length(xnames) - 2)] # exclude Y and cluster
+  xnames <- xnames[1:(length(xnames) - 3)] # exclude w, Y and cluster
+
+  ### Would need to update binomial
 
   if (family == "binomial") {
-    glmfit <- stats::glm(formula, data = orig.data, family = stats::binomial)
-  }
-  else if (family == "poisson") {
-    glmfit <- stats::glm(formula, data = orig.data, family = stats::poisson)
-  }
-  else if (family == "gaussian") {
-    glmfit <- stats::glm(formula, data = orig.data, family = stats::gaussian)
+    bform <- stats::update(formula, cbind(Y, 1-Y) ~ . )
+    glmfit <- stats::glm(bform, data = orig.data, family = stats::binomial, weights = w)
+  } else if (family == "poisson") {
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::poisson, weights = w)
+  } else if (family == "gaussian") {
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::gaussian, weights = w)
   }
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
 
   if (family == "binomial") {
-    dx[, v := p * (1-p)]
-  }
-  else if (family == "poisson") {
+    dx[, v := p*(1-p)]
+  } else if (family == "poisson") {
     dx[, v := p]
-  }
-  else if (family == "gaussian") {
+  } else if (family == "gaussian") {
     dx[, v := stats::var(resid(glmfit))]
   }
 
@@ -51,28 +50,28 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   if (family == "binomial") {
     dX <- dX * dx[, p*(1-p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dX <- dX * dx[, p]
   }
 
   setnames(dX, namesd)
   dx <- cbind(dx, dX)
 
-  ### Estimate ICC
+  ### Estimate ICC -
 
   drho <- dx[,
              list(
                .N,
-               sum_r = sum( resid ),
-               uss_r = sum( resid ^ 2 )
+               sum_r = sum(resid),
+               uss_r = sum(resid^2),
+               wgt_m = mean(w_)
              ), keyby = cname_]
 
-  drho[, wt_ij := ( N * (N-1) / 2)]
-  drho[, rho_ij := sum_r^2 - uss_r ]
+  drho[, wt_ij := wgt_m * ( N * (N-1) / 2)]
+  drho[, rho_ij := wgt_m * sum_r^2 - uss_r ]
   rho <- drho[, (sum(rho_ij)/2) / sum(wt_ij)]
 
-  ### Estimate beta
+  ### Estimate beta - need to add weights here:
 
   wi <- lapply(1:N_clusters, function(i) .getW(dx[cname_ == i], namesd, rho))
   W <- Reduce("+", wi)
@@ -91,12 +90,10 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   if (family == "binomial") {
     dr[, p := 1/(1 + exp(-p))]
     dr[, v := p * (1 - p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dr[, p := exp(p)]
     dr[, v := p]
-  }
-  else if (family == "gaussian") {
+  } else if (family == "gaussian") {
     dr[, v:= stats::var( Y - p )]
   }
 
@@ -107,8 +104,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   if (family == "binomial") {
     dR <- dR * dr[, p*(1-p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dR <- dR * dr[, p]
   }
 
@@ -152,7 +148,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 #' geefit
 #'
 #' @export
-gee1step <- function(formula, data, cluster, family, ...) {
+gee1step <- function(formula, data, cluster, family, weights = NULL, ...) {
 
   orig.formula <- formula
 
@@ -184,6 +180,12 @@ gee1step <- function(formula, data, cluster, family, ...) {
     stop(paste("Cluster variable", cluster, "is not in data set"))
   }
 
+  if ( !is.null(weights)) {
+    if (!(weights %in% names(data)) ) {
+      stop(paste("Weight varialble", weights, "is not in data set"))
+    }
+  }
+
   MM <- stats::model.matrix(formula, data = data)
 
   Y_ <- all.vars(formula)[1]
@@ -199,8 +201,11 @@ gee1step <- function(formula, data, cluster, family, ...) {
   namesd <- paste0("d.", X_)
 
   dx <- data.table::data.table(MM)
-  dx[, cname_ := data[, get(cluster)] ]
+  if (is.null(weights)) {
+    dx[, w_ := 1]
+  } else dx[, w_ := data[, get(weights)] ]
 
+  dx[, cname_ := data[, get(cluster)] ]
   dx[, Y := data[, get(Y_)] ] # changing outcome to generic "Y"
   formula <- stats::update(formula, Y ~ .)
 

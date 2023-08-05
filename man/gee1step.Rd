@@ -4,7 +4,7 @@
 \alias{gee1step}
 \title{Estimate parameters using one-step algorithm}
 \usage{
-gee1step(formula, data, cluster, family, ...)
+gee1step(formula, data, cluster, family, weights = NULL, ...)
 }
 \arguments{
 \item{formula}{an object of class "formula": a symbolic description of the model to be fitted.}
