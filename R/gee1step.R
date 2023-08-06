@@ -23,15 +23,13 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   xnames <- names(dx)
   xnames <- xnames[1:(length(xnames) - 3)] # exclude w, Y and cluster
 
-  ### Would need to update binomial
-
   if (family == "binomial") {
     bform <- stats::update(formula, cbind(Y, 1-Y) ~ . )
-    glmfit <- stats::glm(bform, data = orig.data, family = stats::binomial, weights = w)
+    glmfit <- stats::glm(bform, data = orig.data, family = stats::binomial, weights = w_)
   } else if (family == "poisson") {
-    glmfit <- stats::glm(formula, data = orig.data, family = stats::poisson, weights = w)
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::poisson, weights = w_)
   } else if (family == "gaussian") {
-    glmfit <- stats::glm(formula, data = orig.data, family = stats::gaussian, weights = w)
+    glmfit <- stats::glm(formula, data = orig.data, family = stats::gaussian, weights = w_)
   }
 
   dx[, p := stats::predict.glm(glmfit, type = "response")]
@@ -44,7 +42,11 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
     dx[, v := stats::var(resid(glmfit))]
   }
 
+
   dx[, resid := (Y - p) / sqrt(v) ]
+
+  print(dx[, .(Y, p, v, resid)])
+
 
   dX <- dx[, X_, with = FALSE] # no modification (below) for gaussiaan
 
@@ -69,6 +71,12 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   drho[, wt_ij := wgt_m * ( N * (N-1) / 2)]
   drho[, rho_ij := wgt_m * sum_r^2 - uss_r ]
+
+
+  # drho[, wt_ij := ( N * (N-1) / 2)]
+  # drho[, rho_ij := sum_r^2 - uss_r ]
+
+
   rho <- drho[, (sum(rho_ij)/2) / sum(wt_ij)]
 
   ### Estimate beta - need to add weights here:
@@ -193,6 +201,11 @@ gee1step <- function(formula, data, cluster, family, weights = NULL, ...) {
 
   orig.data <- copy(data) # need original data set to fit glm
   setnames(orig.data, Y_, "Y") # since formula outcome changes (below)
+  if (is.null(weights)) {
+    orig.data[, w_ := 1]
+  } else {
+    orig.data[, w_ := data[, get(weights)]]
+  }
 
   if (Y_ %in% X_) {
     stop(paste("Outcome variable", Y_, "cannot also be a predictor"))
