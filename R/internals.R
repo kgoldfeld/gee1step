@@ -1,6 +1,6 @@
 # Internal functions
 
-.getD <- function(dd, namesd, rho) {
+.getD <- function(dd, namesd, rho, weight) {
 
   # "declare" vars to avoid global NOTE
 
@@ -15,12 +15,12 @@
 
   xrho <- rho / ( (1-rho) + nrow(d) * rho)
   d1 <- dv(d, sqrtv)
-  sumr <- sum(resid)
+  sumr <- sum(weight * resid) # scaled by weights
 
   return(xrho * sumr * d1)
 }
 
-.getW <- function(dd, namesd, rho) {
+.getW <- function(dd, namesd, rho, weight) {
 
   # "declare" vars to avoid global NOTE
 
@@ -33,13 +33,14 @@
   sqrtv <- dd[, sqrt(v)]
 
   xrho <- rho / ( (1-rho) + nrow(d) * rho)
-  d1 <- ddv(d, v)
+  d1 <- ddv(d, v, weight)
   d2 <- dv(d, sqrtv)
+  d3 <- dv2(d, sqrtv, weight)
 
-  return( d1 - xrho * d2 %*% t(d2) )
+  return( d1 - xrho * d2 %*% t(d3) )
 }
 
-.getU <- function(dd, namesd, rho) {
+.getU <- function(dd, namesd, rho, weight) {
 
   # "declare" vars to avoid global NOTE
 
@@ -54,10 +55,10 @@
   resid <- dd[, resid]
   sqrtv <- dd[, sqrt(v)]
 
-  d1 <- dvm(d, residv)
+  d1 <- dvm(d, residv, weight)
   d2 <- dv(d, sqrtv)
   xrho <- rho / ( (1-rho) + nrow(d) * rho)
-  sumr <- sum(resid)
+  sumr <- sum(resid * weight) # scaled by residuals
 
   ui <- d1 - xrho * sumr * d2
 
