@@ -4,7 +4,7 @@ using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericMatrix ddv(NumericMatrix xx, NumericVector v) {
+NumericMatrix ddv(NumericMatrix xx, NumericVector v, NumericVector w) {
 
   Environment base("package:base");
   Function mat_Mult = base["%*%"];
@@ -25,7 +25,7 @@ NumericMatrix ddv(NumericMatrix xx, NumericVector v) {
     xm1 = as<NumericMatrix>(xv);
     xm2 = transpose(xm1);
     xm = mat_Mult(xm1, xm2);
-    xm = xm / v(i);
+    xm = w(i) * xm / v(i); // added in pre-multiplication by w(i)
 
    for (int j = 0; j < dimxm; j++) {     // loop over rows
      for (int k = 0; k < dimxm; k++) {   // loop over columns
@@ -62,7 +62,29 @@ NumericVector dv(NumericMatrix xx, NumericVector adj) {
 }
 
 // [[Rcpp::export]]
-NumericVector dvm(NumericMatrix xx, NumericVector adj) {
+NumericVector dv2(NumericMatrix xx, NumericVector adj, NumericVector w) {
+  
+  int dimxv = xx.ncol();
+
+  NumericVector xv;
+  NumericVector tot_xv(dimxv);
+
+  for(int i = 0; i < xx.nrow(); ++i) {
+  
+    xv = xx( i, _ );
+    xv = w(i) * xv / adj(i); // scale by weights
+    
+    for (int j = 0; j < dimxv; j++) {     // loop over rows
+      tot_xv(j) = tot_xv(j) + xv(j); // elementwise addition
+    }
+  }
+  
+  return tot_xv;
+  
+}
+
+// [[Rcpp::export]]
+NumericVector dvm(NumericMatrix xx, NumericVector adj, NumericVector w) {
 
   int dimxv = xx.ncol();
 
@@ -72,7 +94,7 @@ NumericVector dvm(NumericMatrix xx, NumericVector adj) {
   for(int i = 0; i < xx.nrow(); ++i) {
 
     xv = xx( i, _ );
-    xv = xv * adj(i);
+    xv = xv * adj(i) * w(i); // scaled by weights 
 
     for (int j = 0; j < dimxv; j++) {     // loop over rows
       tot_xv(j) = tot_xv(j) + xv(j); // elementwise addition

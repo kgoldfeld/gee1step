@@ -11,14 +11,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // ddv
-NumericMatrix ddv(NumericMatrix xx, NumericVector v);
-RcppExport SEXP _gee1step_ddv(SEXP xxSEXP, SEXP vSEXP) {
+NumericMatrix ddv(NumericMatrix xx, NumericVector v, NumericVector w);
+RcppExport SEXP _gee1step_ddv(SEXP xxSEXP, SEXP vSEXP, SEXP wSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type xx(xxSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(ddv(xx, v));
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(ddv(xx, v, w));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -34,23 +35,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// dvm
-NumericVector dvm(NumericMatrix xx, NumericVector adj);
-RcppExport SEXP _gee1step_dvm(SEXP xxSEXP, SEXP adjSEXP) {
+// dv2
+NumericVector dv2(NumericMatrix xx, NumericVector adj, NumericVector w);
+RcppExport SEXP _gee1step_dv2(SEXP xxSEXP, SEXP adjSEXP, SEXP wSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type xx(xxSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type adj(adjSEXP);
-    rcpp_result_gen = Rcpp::wrap(dvm(xx, adj));
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(dv2(xx, adj, w));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dvm
+NumericVector dvm(NumericMatrix xx, NumericVector adj, NumericVector w);
+RcppExport SEXP _gee1step_dvm(SEXP xxSEXP, SEXP adjSEXP, SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type xx(xxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type adj(adjSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(dvm(xx, adj, w));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_gee1step_ddv", (DL_FUNC) &_gee1step_ddv, 2},
+    {"_gee1step_ddv", (DL_FUNC) &_gee1step_ddv, 3},
     {"_gee1step_dv", (DL_FUNC) &_gee1step_dv, 2},
-    {"_gee1step_dvm", (DL_FUNC) &_gee1step_dvm, 2},
+    {"_gee1step_dv2", (DL_FUNC) &_gee1step_dv2, 3},
+    {"_gee1step_dvm", (DL_FUNC) &_gee1step_dvm, 3},
     {NULL, NULL, 0}
 };
 
