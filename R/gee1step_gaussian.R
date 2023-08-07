@@ -52,7 +52,7 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, weight, .
              list(
                .N,
                sum_r = sum(resid),
-               uss_r = sum(resid^2)
+               uss_r = crossprod(resid) # same as but faster: sum(resid^2)
              ), keyby = cname_]
   
   drho[, wt_ij := ( N * (N-1) / 2)]
@@ -91,7 +91,8 @@ gee1step.gaussian <- function(dx, formula, X_, Y_, namesd, N_clusters, weight, .
   ### Get results
   
   # vb <- MASS::ginv(W) %*% U %*% MASS::ginv(W) # maybe make this an option?
-  vb <- solve(W) %*% U %*% solve(W)
+  W <- Matrix::chol2inv(W) # avoid inverting matrix twice and exploit the fact that matrix is PSD
+  vb <- W %*% U %*% W
   
   result <- list(beta = as.vector(beta2),
                  vb = vb,
