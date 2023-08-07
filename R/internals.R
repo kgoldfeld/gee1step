@@ -37,7 +37,7 @@
   d2 <- dv(d, sqrtv)
   d3 <- dv2(d, sqrtv, weight)
 
-  return( d1 - xrho * d2 %*% t(d3) )
+  return( d1 - xrho * tcrossprod(d2) ) # same as (but faster): d1 - xrho * d2 %*% t(d3)
 }
 
 .getU <- function(dd, namesd, rho, weight) {
@@ -62,6 +62,6 @@
 
   ui <- d1 - xrho * sumr * d2
 
-  return(ui %*% t(ui))
+  return(tcrossprod(ui))  # same as (but faster): ui %*% t(ui)
 
 }
