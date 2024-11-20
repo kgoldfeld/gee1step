@@ -9,3 +9,4 @@ local-testing/
 src/*.o
 src/*.so
 src/*.dll
+/Gabe
