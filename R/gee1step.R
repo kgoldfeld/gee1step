@@ -45,9 +45,6 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   dx[, resid := (Y - p) / sqrt(v) ]
 
-  print(dx[, .(Y, p, v, resid)])
-
-
   dX <- dx[, X_, with = FALSE] # no modification (below) for gaussiaan
 
   if (family == "binomial") {
@@ -70,21 +67,21 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
              ), keyby = cname_]
 
   drho[, wt_ij := wgt_m * ( N * (N-1) / 2)]
-  drho[, rho_ij := wgt_m * sum_r^2 - uss_r ]
-
+  drho[, rho_ij := wgt_m * (sum_r^2 - uss_r) ] # added parentheses 12/2/24
 
   # drho[, wt_ij := ( N * (N-1) / 2)]
   # drho[, rho_ij := sum_r^2 - uss_r ]
-
 
   rho <- drho[, (sum(rho_ij)/2) / sum(wt_ij)]
 
   ### Estimate beta - need to add weights here:
 
-  wi <- lapply(1:N_clusters, function(i) .getW(dx[cname_ == i], namesd, rho))
+  # change from 1:N_clusters to unique(dx[, cname_]) in lapply 2/12/24
+
+  wi <- lapply(unique(dx[, cname_]), function(i) .getW(dx[cname_ == i], namesd, rho))
   W <- Reduce("+", wi)
 
-  di <- lapply(1:N_clusters, function(i) .getD(dx[cname_ == i], namesd, rho))
+  di <- lapply(unique(dx[, cname_]), function(i) .getD(dx[cname_ == i], namesd, rho))
   D <- Reduce("+", di)
 
   beta <- stats::coef(glmfit)
@@ -119,13 +116,19 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   setnames(dR, namesd)
   dr <- cbind(dr, dR)
 
-  wi <- lapply(1:N_clusters, function(i) .getW(dr[cname_ == i], namesd, rho))
+  wi <- lapply(unique(dr[, cname_]), function(i) .getW(dr[cname_ == i], namesd, rho))
   W <- Reduce("+", wi)
 
-  ui <- lapply(1:N_clusters, function(i) .getU(dr[cname_ == i], namesd, rho))
+  # print(solve(W)) # <------------ delete
+
+  ui <- lapply(unique(dr[, cname_]), function(i) .getU(dr[cname_ == i], namesd, rho))
   U <- Reduce("+", ui)
 
+  # print(U) # <------------ delete
+
   vb <- solve(W) %*% U %*% solve(W)
+
+  # print(vb) # <------------ delete
 
   ### Get results
 
