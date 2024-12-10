@@ -68,13 +68,18 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
                wgt_m = mean(w_)
              ), keyby = cname_]
 
-  drho[, wt_ij := wgt_m * ( N * (N-1) / 2)]
-  drho[, rho_ij := wgt_m * (sum_r^2 - uss_r) ] # added parentheses 12/2/24
+  # NEW WEIGHTED
 
-  # drho[, wt_ij := ( N * (N-1) / 2)]
-  # drho[, rho_ij := sum_r^2 - uss_r ]
+  # drho[, wt_ij := wgt_m * ( N * (N-1) / 2)]
+  # drho[, rho_ij := wgt_m * (sum_r^2 - uss_r) ] # added parentheses 12/2/24
+
+  # OLD NO WEIGHTS
+
+  drho[, wt_ij := ( N * (N-1) / 2)]
+  drho[, rho_ij := sum_r^2 - uss_r ]
 
   rho <- drho[, (sum(rho_ij)/2) / sum(wt_ij)]
+
 
   # change from 1:N_clusters to unique(dx[, cname_]) in lapply 2/12/24
 
