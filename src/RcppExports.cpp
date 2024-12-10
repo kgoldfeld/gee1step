@@ -49,11 +49,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dv2
+NumericVector dv2(NumericMatrix xx, NumericVector adj, NumericVector w);
+RcppExport SEXP _gee1step_dv2(SEXP xxSEXP, SEXP adjSEXP, SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type xx(xxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type adj(adjSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(dv2(xx, adj, w));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gee1step_ddv", (DL_FUNC) &_gee1step_ddv, 3},
     {"_gee1step_dv", (DL_FUNC) &_gee1step_dv, 3},
     {"_gee1step_dvm", (DL_FUNC) &_gee1step_dvm, 3},
+    {"_gee1step_dv2", (DL_FUNC) &_gee1step_dv2, 3},
     {NULL, NULL, 0}
 };
 

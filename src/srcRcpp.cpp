@@ -18,8 +18,8 @@ NumericMatrix ddv(NumericMatrix xx, NumericVector v, NumericVector w) {
 
   NumericMatrix tot_xm(dimxm, dimxm);
 
-
   for(int i = 0; i < xx.nrow(); ++i) {
+
     xv = xx( i, _ );
     xv.attr("dim") = Dimension(dimxm, 1);
     xm1 = as<NumericMatrix>(xv);
@@ -77,6 +77,28 @@ NumericVector dvm(NumericMatrix xx, NumericVector adj, NumericVector w) {
       tot_xv(j) = tot_xv(j) + xv(j); // element-wise addition
     }
   }
+
+  return tot_xv;
+
+}
+
+// [[Rcpp::export]]
+NumericVector dv2(NumericMatrix xx, NumericVector adj, NumericVector w) {
+
+  int dimxv = xx.ncol();
+
+  NumericVector xv;
+  NumericVector tot_xv(dimxv);
+
+  for(int i = 0; i < xx.nrow(); ++i) {
+
+    xv = xx( i, _ );
+    xv = w(i) * xv / adj(i); // scale by weights
+
+    for (int j = 0; j < dimxv; j++) {     // loop over rows
+      tot_xv(j) = tot_xv(j) + xv(j); // elementwise addition
+      }
+    }
 
   return tot_xv;
 

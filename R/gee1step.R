@@ -23,6 +23,8 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   xnames <- names(dx)
   xnames <- xnames[1:(length(xnames) - 3)] # exclude w, Y and cluster
 
+  ### Verify that weights should or should not be included in initial model fit:
+
   if (family == "binomial") {
     bform <- stats::update(formula, cbind(Y, 1-Y) ~ . )
     glmfit <- stats::glm(bform, data = orig.data, family = stats::binomial, weights = w_)
@@ -45,7 +47,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   dx[, resid := (Y - p) / sqrt(v) ]
 
-  dX <- dx[, X_, with = FALSE] # no modification (below) for gaussiaan
+  dX <- dx[, X_, with = FALSE] # no modification (below) for gaussian
 
   if (family == "binomial") {
     dX <- dX * dx[, p*(1-p)]
@@ -62,7 +64,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
              list(
                .N,
                sum_r = sum(resid),
-               uss_r = sum(resid^2),
+               uss_r = crossprod(resid),
                wgt_m = mean(w_)
              ), keyby = cname_]
 
@@ -74,8 +76,6 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   rho <- drho[, (sum(rho_ij)/2) / sum(wt_ij)]
 
-  ### Estimate beta - need to add weights here:
-
   # change from 1:N_clusters to unique(dx[, cname_]) in lapply 2/12/24
 
   wi <- lapply(unique(dx[, cname_]), function(i) .getW(dx[cname_ == i], namesd, rho))
@@ -85,7 +85,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   D <- Reduce("+", di)
 
   beta <- stats::coef(glmfit)
-  beta2 <- beta - solve(W) %*% D
+  beta2 <- beta - solve(W) %*% D  # from equation (12) in Lipsitz
 
   ### Robust se
 
@@ -148,6 +148,8 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 #' @param data a required data frame or data.table containing the variables in the model.
 #' @param cluster the name of the field that identifies the clusters.
 #' @param family the distribution family: gaussian, binomial, and poisson
+#' @param weights optional name of the field that identifies observation weights to be applied in the
+#' regression, allowing differential importance to be assigned to individual observations.
 #' @param ... currently disregarded
 #' @references Lipsitz, S., Fitzmaurice, G., Sinha, D., Hevelone, N., Hu, J.,
 #' & Nguyen, L. L. (2017). One-step generalized estimating equations with large
@@ -192,8 +194,8 @@ gee1step <- function(formula, data, cluster, family, weights = NULL, ...) {
   }
 
   if ( !is.null(weights)) {
-    if (!(weights %in% names(data)) ) {
-      stop(paste("Weight varialble", weights, "is not in data set"))
+    if (!(weights%in% names(data)) ) {
+      stop(paste("Weights variable", weights, "is not in data set"))
     }
   }
 
@@ -237,6 +239,7 @@ gee1step <- function(formula, data, cluster, family, weights = NULL, ...) {
       outcome = Y_,
       xnames = X_,
       model.data = MM,
+      weights= weights,
       cluster_sizes = as.vector(dx[, .N, keyby = cname_][, N])
     ), mod.fit)
   attr(result, "class") <- "gee1step"

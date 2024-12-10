@@ -13,3 +13,7 @@ dvm <- function(xx, adj, w) {
     .Call(`_gee1step_dvm`, xx, adj, w)
 }
 
+dv2 <- function(xx, adj, w) {
+    .Call(`_gee1step_dv2`, xx, adj, w)
+}
+
