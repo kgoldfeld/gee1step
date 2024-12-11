@@ -62,8 +62,8 @@
   w <- dd[, w_]
   w1 <- rep(1, times = nrow(d))
 
-  d1 <- dvm(d, resid, w)  # just checking to see if below was a typo in equation (5)
-  # d1 <- dvm(d, residv, w)
+  # d1 <- dvm(d, resid, w)  # just checking to see if below was a typo in equation (5)
+  d1 <- dvm(d, residv, w)
   d2 <- dv(d, sqrtv, w1)
   xrho <- rho / ( (1-rho) + nrow(d) * rho)
   sumr <- sum(w * resid)
