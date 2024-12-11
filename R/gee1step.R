@@ -25,11 +25,9 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   if (family == "binomial") {
     glmfit <- stats::glm(formula, data = orig.data, family = stats::binomial)
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     glmfit <- stats::glm(formula, data = orig.data, family = stats::poisson)
-  }
-  else if (family == "gaussian") {
+  } else if (family == "gaussian") {
     glmfit <- stats::glm(formula, data = orig.data, family = stats::gaussian)
   }
 
@@ -37,11 +35,9 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   if (family == "binomial") {
     dx[, v := p * (1-p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dx[, v := p]
-  }
-  else if (family == "gaussian") {
+  } else if (family == "gaussian") {
     dx[, v := stats::var(resid(glmfit))]
   }
 
@@ -51,8 +47,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   if (family == "binomial") {
     dX <- dX * dx[, p*(1-p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dX <- dX * dx[, p]
   }
 
@@ -91,12 +86,10 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
   if (family == "binomial") {
     dr[, p := 1/(1 + exp(-p))]
     dr[, v := p * (1 - p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dr[, p := exp(p)]
     dr[, v := p]
-  }
-  else if (family == "gaussian") {
+  } else if (family == "gaussian") {
     dr[, v:= stats::var( Y - p )]
   }
 
@@ -107,8 +100,7 @@ gee1step.dist <- function(orig.data, dx, formula, family, X_, Y_, namesd, N_clus
 
   if (family == "binomial") {
     dR <- dR * dr[, p*(1-p)]
-  }
-  else if (family == "poisson") {
+  } else if (family == "poisson") {
     dR <- dR * dr[, p]
   }
 
