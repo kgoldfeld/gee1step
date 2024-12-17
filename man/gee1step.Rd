@@ -15,6 +15,9 @@ gee1step(formula, data, cluster, family, weights = NULL, ...)
 
 \item{family}{the distribution family: gaussian, binomial, and poisson}
 
+\item{weights}{optional name of the field that identifies observation weights to be applied in the
+regression, allowing differential importance to be assigned to individual observations.}
+
 \item{...}{currently disregarded}
 }
 \value{
